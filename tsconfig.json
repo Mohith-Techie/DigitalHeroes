@@ -19,7 +19,10 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      // Application code lives in `src`. The `./*` fallback keeps root-level
+      // folders reachable under the same alias — notably `types/database.types.ts`,
+      // which stays at the root so `supabase gen types` regenerates cleanly.
+      "@/*": ["./src/*", "./*"]
     }
   },
   "include": [

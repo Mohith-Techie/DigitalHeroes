@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Digital Heroes — design tokens
+
+   PRD §12 "Feel, not fairway": the platform must not read as a golf website.
+   So: no greens, no turf textures, no plaid, no club or flag iconography.
+
+   Instead a warm, editorial, night-mode palette — ember and blush against near
+   black — that leads with generosity rather than sport. Type pairs a
+   high-contrast serif for emotional headlines with a neutral grotesque for UI.
+--------------------------------------------------------------------------- */
+
+@theme {
+  /* Surfaces, darkest to lightest */
+  --color-canvas: #09090c;
+  --color-surface: #101016;
+  --color-raised: #17171f;
+  --color-line: #24242e;
+  --color-line-bright: #353543;
+
+  /* Text — warm whites, never pure #fff, to keep the page soft at night */
+  --color-ink: #f5f2ed;
+  --color-ink-dim: #a5a2ae;
+  --color-ink-faint: #6f6c7a;
+
+  /* Accents. Ember carries the CTA; blush carries charitable impact. */
+  --color-ember: #ffb020;
+  --color-ember-deep: #f0871d;
+  --color-blush: #ff6f61;
+  --color-iris: #8c7cf0;
+
+  /* Type */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
+
+  /* Motion — one shared easing so every transition feels like one system */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-fade-up: fade-up 0.8s var(--ease-out-expo) both;
+  --animate-sheen: sheen 1.1s var(--ease-out-expo);
+  --animate-drift: drift 22s ease-in-out infinite;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes sheen {
+    from {
+      transform: translateX(-120%) skewX(-12deg);
+    }
+    to {
+      transform: translateX(220%) skewX(-12deg);
+    }
+  }
+
+  @keyframes drift {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(2%, -3%, 0) scale(1.06);
+    }
+  }
+}
+
+/* --------------------------------------------------------------------------- */
+
+html {
+  /* Anchor links must clear the sticky header. */
+  scroll-padding-top: 6rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  /* Stops the ember glows forcing a horizontal scrollbar on mobile.
+     Must be `clip`, not `hidden`: `hidden` makes body a scroll container,
+     which breaks `position: sticky` and leaves `animation-timeline: view()`
+     resolving against a container that never scrolls — the reveals below
+     would stay stuck at opacity 0. */
+  overflow-x: clip;
+}
+
+::selection {
+  background-color: var(--color-ember);
+  color: var(--color-canvas);
+}
+
+/* Visible, consistent keyboard focus everywhere. */
+:focus-visible {
+  outline: 2px solid var(--color-ember);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------------------
+   Scroll-driven reveal
+
+   Implemented with `animation-timeline: view()` rather than an
+   IntersectionObserver so it costs no JavaScript and — crucially — cannot
+   leave content permanently invisible. Browsers without scroll-driven
+   animation support simply render everything as normal.
+--------------------------------------------------------------------------- */
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: fade-up linear both;
+      animation-timeline: view();
+      /* Complete once the element is halfway in, so it is fully opaque well
+         before the reader's eye reaches it — and so short sections at the end
+         of the page still finish. */
+      animation-range: entry 0% entry 50%;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Utilities
+--------------------------------------------------------------------------- */
+
+/* Small caps eyebrow labels, echoing the PRD's own section markers. */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+/* Honour reduced-motion globally: kill transforms and long transitions, but
+   leave opacity changes so nothing becomes unreadable. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
